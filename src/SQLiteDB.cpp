@@ -1,7 +1,6 @@
-// Importing a Header File
-#include <Database/DatabaseAPI.hpp>
+#include <DatabaseAPI/SQLiteDB.hpp>
 
-int DB::Database::CreateTable(const std::string &NameTable, DB::DatabaseValues Columns)
+int DB::SQLiteDB::CreateTable(const std::string &NameTable, DB::DatabaseValues Columns)
 {
     try
     {
@@ -30,7 +29,7 @@ int DB::Database::CreateTable(const std::string &NameTable, DB::DatabaseValues C
         throw std::runtime_error(fmt::format("DatabaseAPI.CreateTable.{}", error.what()));
     }
 }
-int DB::Database::InsertRowToTable(const std::string &NameTable, DB::DatabaseValues Fields)
+int DB::SQLiteDB::InsertRowToTable(const std::string &NameTable, DB::DatabaseValues Fields)
 {
     try
     {
@@ -66,7 +65,7 @@ int DB::Database::InsertRowToTable(const std::string &NameTable, DB::DatabaseVal
     }
 }
 
-bool DB::Database::ExistTableInDB(const std::string &NameTable)
+bool DB::SQLiteDB::ExistTableInDB(const std::string &NameTable)
 {
     try
     {
@@ -99,7 +98,7 @@ bool DB::Database::ExistTableInDB(const std::string &NameTable)
     }
 }
 
-bool DB::Database::ExistRowInTable(const std::string &NameTable, const std::string &NameColumn, const std::string &Value)
+bool DB::SQLiteDB::ExistRowInTable(const std::string &NameTable, const std::string &NameColumn, const std::string &Value)
 {
     try
     {
@@ -124,7 +123,7 @@ bool DB::Database::ExistRowInTable(const std::string &NameTable, const std::stri
     }
 }
 
-std::string DB::Database::GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+std::string DB::SQLiteDB::GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
 {
     try
     {
@@ -166,7 +165,7 @@ std::string DB::Database::GetValueFromRow(const std::string &NameTable, const st
     }
 }
 
-DB::DatabaseValues DB::Database::GetRowByID(const std::string &NameTable, const int &id)
+DB::DatabaseValues DB::SQLiteDB::GetRowByID(const std::string &NameTable, const int &id)
 {
     try
     {
@@ -217,7 +216,7 @@ DB::DatabaseValues DB::Database::GetRowByID(const std::string &NameTable, const 
     }
 }
 
-DB::EnumDatabaseValues DB::Database::GetRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::EnumDatabaseValues DB::SQLiteDB::GetRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
 {
     try
     {
@@ -282,7 +281,7 @@ DB::EnumDatabaseValues DB::Database::GetRowFromTable(const std::string &NameTabl
     }
 }
 
-DB::DatabaseValues DB::Database::GetTwoColumnsFromTable(const std::string &NameTable, const std::string &FirstColumn, const std::string &SecondColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::DatabaseValues DB::SQLiteDB::GetTwoColumnsFromTable(const std::string &NameTable, const std::string &FirstColumn, const std::string &SecondColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
 {
     try
     {
@@ -341,7 +340,7 @@ DB::DatabaseValues DB::Database::GetTwoColumnsFromTable(const std::string &NameT
     }
 }
 
-DB::EnumColDatabaseValues DB::Database::GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::EnumColDatabaseValues DB::SQLiteDB::GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
 {
     try
     {
@@ -389,7 +388,7 @@ DB::EnumColDatabaseValues DB::Database::GetOneColumnFromTable(const std::string 
     }
 }
 
-DB::ArrayDatabaseValues DB::Database::GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::ArrayDatabaseValues DB::SQLiteDB::GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
 {
     try
     {
@@ -438,7 +437,7 @@ DB::ArrayDatabaseValues DB::Database::GetArrayOneColumnFromTable(const std::stri
     }
 }
 
-DB::EnumDatabaseValues DB::Database::GetAllRowsFromTable(const std::string &NameTable)
+DB::EnumDatabaseValues DB::SQLiteDB::GetAllRowsFromTable(const std::string &NameTable)
 {
     try
     {
@@ -493,7 +492,7 @@ DB::EnumDatabaseValues DB::Database::GetAllRowsFromTable(const std::string &Name
     }
 }
 
-DB::DatabaseValues DB::Database::GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters)
+DB::DatabaseValues DB::SQLiteDB::GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters)
 {
     try
     {
@@ -544,7 +543,7 @@ DB::DatabaseValues DB::Database::GetMaxRowFromTable(const std::string &NameTable
     }
 }
 
-std::string DB::Database::GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters)
+std::string DB::SQLiteDB::GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters)
 {
     try
     {
@@ -582,7 +581,7 @@ std::string DB::Database::GetMaxValueFromTable(const std::string &NameTable, con
     }
 }
 
-int DB::Database::GetArraySize(const std::string &NameTable, const std::string &NameColumn)
+int DB::SQLiteDB::GetArraySize(const std::string &NameTable, const std::string &NameColumn)
 {
     try
     {
@@ -615,7 +614,7 @@ int DB::Database::GetArraySize(const std::string &NameTable, const std::string &
     }
 }
 
-int DB::Database::RemoveRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters)
+int DB::SQLiteDB::RemoveRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters)
 {
     try
     {
@@ -641,7 +640,7 @@ int DB::Database::RemoveRowFromTable(const std::string &NameTable, const std::op
     }
 }
 
-int DB::Database::DeleteAllRows(const std::string &NameTable)
+int DB::SQLiteDB::DeleteAllRows(const std::string &NameTable)
 {
     try
     {
@@ -664,7 +663,7 @@ int DB::Database::DeleteAllRows(const std::string &NameTable)
     }
 }
 
-int DB::Database::RunQuery(const std::string &SQL_QUERY)
+int DB::SQLiteDB::RunQuery(const std::string &SQL_QUERY)
 {
     try
     {
@@ -682,7 +681,7 @@ int DB::Database::RunQuery(const std::string &SQL_QUERY)
     }
 }
 
-DB::EnumDatabaseValues DB::Database::ExecuteQuery(const std::string &SQL_QUERY)
+DB::EnumDatabaseValues DB::SQLiteDB::ExecuteQuery(const std::string &SQL_QUERY)
 {
     try
     {
@@ -737,7 +736,7 @@ DB::EnumDatabaseValues DB::Database::ExecuteQuery(const std::string &SQL_QUERY)
     }
 }
 
-int DB::Database::UpdateRowInTable(const std::string &NameTable, DB::DatabaseValues Values, DB::DatabaseValues Parameters)
+int DB::SQLiteDB::UpdateRowInTable(const std::string &NameTable, DB::DatabaseValues Values, DB::DatabaseValues Parameters)
 {
     try
     {
@@ -769,7 +768,7 @@ int DB::Database::UpdateRowInTable(const std::string &NameTable, DB::DatabaseVal
     }
 }
 
-int DB::Database::countSubstr(const std::string str, const std::string substr)
+int DB::SQLiteDB::countSubstr(const std::string str, const std::string substr)
 {
     int count = 0;
     size_t pos = 0;
@@ -781,7 +780,7 @@ int DB::Database::countSubstr(const std::string str, const std::string substr)
     return count;
 }
 
-void DB::Database::AddParameters(std::string &SQL_QUERY, const DB::DatabaseValues &Parameters, int maxNum_WHERE)
+void DB::SQLiteDB::AddParameters(std::string &SQL_QUERY, const DB::DatabaseValues &Parameters, int maxNum_WHERE)
 {
     if (Parameters.size() == 0)
     {
@@ -801,7 +800,7 @@ void DB::Database::AddParameters(std::string &SQL_QUERY, const DB::DatabaseValue
     }
 }
 
-void DB::Database::AddExceptions(std::string &SQL_QUERY, const DB::DatabaseValues &Exceptions, int maxNum_WHERE)
+void DB::SQLiteDB::AddExceptions(std::string &SQL_QUERY, const DB::DatabaseValues &Exceptions, int maxNum_WHERE)
 {
     if (Exceptions.size() == 0)
     {

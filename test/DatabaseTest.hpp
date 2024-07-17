@@ -1,6 +1,6 @@
 #include <cstring>
 #include <gtest/gtest.h>
-#include <Database/DatabaseAPI.hpp>
+#include <DatabaseAPI/SQLiteDB.hpp>
 #include <filesystem>
 #include <unordered_map>
 #include <fstream>
@@ -12,8 +12,8 @@ protected:
     std::string DatabaseFolder;
     std::string DatabasePath;
     std::string VersionsDBPAth;
-    DB::Database database;
-    DB::Database VersionsDatabase;
+    DB::SQLiteDB database;
+    DB::SQLiteDB VersionsDatabase;
     std::string NameApp;
     std::string Windows_Command;
     std::string macOS_Command;

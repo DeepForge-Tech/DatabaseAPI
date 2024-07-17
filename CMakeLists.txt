@@ -6,24 +6,49 @@ include(GNUInstallDirs)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadDependecies.cmake)
 set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/bin/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
 option(BUILD_SHARED_LIBS ON)
+option(USE_SQLITE "Use SQLite database" ON)
+option(USE_POSTGRESQL  "Use PostgreSQL database" ON)
 
 set(SOURCE_FILES
-    include/Database/DatabaseAPI.hpp
-    src/DatabaseAPI.cpp
+  src/Advanced.cpp
 )
+
+
+
+message(STATUS "USE_SQLITE is set to ${USE_SQLITE}")
+if (USE_SQLITE)
+    list(APPEND SOURCE_FILES src/SQLiteDB.cpp)
+endif()
+
+message(STATUS "USE_SQLITE is set to ${USE_POSTGRESQL}")
+if (USE_POSTGRESQL)
+    list(APPEND SOURCE_FILES src/PostgresqlDB.cpp)
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-if(BUILD_SHARED_LIBS)
-    add_library(DatabaseAPI SHARED ${SOURCE_FILES})
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_CXX_FLAGS_DEBUG
+      "/DWIN32 /D_WINDOWS /EHsc /WX /wd4355 /wd4251 /wd4250 /wd4996 /MT"
+      CACHE STRING "Debug compiler flags" FORCE
+    )
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 else()
-    add_library(DatabaseAPI STATIC ${SOURCE_FILES})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")  
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -I /usr/local/include -I ../../include")
+endif()
+
+if(BUILD_SHARED_LIBS)
+    add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+else()
+    add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 endif()
 
 set(LIBRARIES SQLite)
 
-target_link_libraries(DatabaseAPI ${LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 # Building examples
 # add_executable(example ${CMAKE_CURRENT_SOURCE_DIR}/example/example.cpp)
@@ -36,10 +61,9 @@ FetchContent_Declare(
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(googletest)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/test)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test)
 set(TEST_SOURCE_FILES
-  src/test/DatabaseTest.cpp
-  include/Database/DatabaseAPI.hpp
+  test/DatabaseTest.cpp
 )
 enable_testing()
 add_executable(
