@@ -7,24 +7,24 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadDependecies.cmake)
 set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/bin/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-option(BUILD_SHARED_LIBS ON)
+option(BUILD_SHARED_LIBS "Use shared libraries" ON)
 option(USE_SQLITE "Use SQLite database" ON)
-option(USE_POSTGRESQL  "Use PostgreSQL database" ON)
+option(USE_POSTGRESQL "Use PostgreSQL database" ON)
 
 set(SOURCE_FILES
   src/Advanced.cpp
 )
 
-
-
 message(STATUS "USE_SQLITE is set to ${USE_SQLITE}")
 if (USE_SQLITE)
     list(APPEND SOURCE_FILES src/SQLiteDB.cpp)
+    list(APPEND LIBRARIES SQLite)
 endif()
 
-message(STATUS "USE_SQLITE is set to ${USE_POSTGRESQL}")
+message(STATUS "USE_POSTGRESQL is set to ${USE_POSTGRESQL}")
 if (USE_POSTGRESQL)
     list(APPEND SOURCE_FILES src/PostgresqlDB.cpp)
+    list(APPEND LIBRARIES libpqxx)
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -49,10 +49,6 @@ endif()
 set(LIBRARIES SQLite)
 
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
-
-# Building examples
-# add_executable(example ${CMAKE_CURRENT_SOURCE_DIR}/example/example.cpp)
-# target_link_libraries(example DatabaseAPI)
 
 #Testing
 FetchContent_Declare(
