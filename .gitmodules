@@ -1,6 +1,3 @@
-[submodule ".github"]
-	path = .github
-	url = https://github.com/Blackflame576/.github.git
 [submodule "ConfigureTools"]
 	path = ConfigureTools
 	url = https://github.com/DeepForge-Tech/ConfigureTools.git
