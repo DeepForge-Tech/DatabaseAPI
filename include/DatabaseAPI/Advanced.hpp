@@ -3,7 +3,6 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
-#include <sqlite3/sqlite3.h>
 #include <unordered_map>
 #include <filesystem>
 #include <typeinfo>

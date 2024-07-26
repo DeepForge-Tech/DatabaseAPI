@@ -2,6 +2,7 @@
 #define SQLITEDB_HPP
 
 #include <DatabaseAPI/Advanced.hpp>
+#include <sqlite3/sqlite3.h>
 
 namespace DB
 {

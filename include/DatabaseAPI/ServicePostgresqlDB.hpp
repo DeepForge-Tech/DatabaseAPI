@@ -1,17 +1,16 @@
-#ifndef POSTGRESQLDB_HPP
-#define POSTGRESQLDB_HPP
+#ifndef SERVICEPOSTGRESQLDB_HPP
+#define SERVICE_POSTGRESQLDB_HPP
 
 #include <DatabaseAPI/Advanced.hpp>
-#include <pqxx/pqxx>
+#include <curl/curl.h>
+#include <json/json.h>
 
 namespace DB
 {
-    class PostgresqlDB
+    class ServicePostgresqlDB
     {
     public:
-        void open(std::string *DB_Path = nullptr)
-        {
-        }
+        void connect()
         int CreateTable(const std::string &NameTable, DatabaseValues Columns);
 
         int InsertRowToTable(const std::string &NameTable, DatabaseValues Fields);
@@ -69,19 +68,19 @@ namespace DB
 
         void AddExceptions(std::string &SQL_QUERY, const DatabaseValues &Exceptions, int maxNum_WHERE);
 
-        // static int callback(void *data, int argc, char **argv, char **azColName)
-        // {
-        //     int i;
-        //     fprintf(stderr, "%s: ", (const char *)data);
+        static int callback(void *data, int argc, char **argv, char **azColName)
+        {
+            int i;
+            fprintf(stderr, "%s: ", (const char *)data);
 
-        //     for (i = 0; i < argc; i++)
-        //     {
-        //         printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        //     }
+            for (i = 0; i < argc; i++)
+            {
+                printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+            }
 
-        //     printf("\n");
-        //     return 0;
-        // }
+            printf("\n");
+            return 0;
+        }
     };
 }
 
