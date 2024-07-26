@@ -8,11 +8,12 @@ set(CMAKE_CXX_STANDARD 20)
 include(GNUInstallDirs)
 include(FetchContent)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/bin/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 option(USE_SQLITE "Use SQLite library for DatabaseAPI" ON)
-option(USE_POSTGRESQL "Use Postgresql library for DatabaseAPI" ON)
+option(USE_POSTGRESQL "Use Postgresql library for DatabaseAPI" OFF)
 option(USE_SERVICE_POSTGRESQL "Use CURL for send requests to service of postgresql" ON)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadDependecies.cmake)
