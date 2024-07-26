@@ -1,0 +1,49 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: 
+      - "dev"
+      - "master"
+  pull_request:
+    branches: 
+      - "dev"
+      - "master"
+
+jobs:
+  Linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download ConfigureTools
+      run: git clone https://github.com/DeepForge-Tech/ConfigureTools.git
+    - name: Install libraries
+      run: python3 ConfigureTools/InstallPackages.py
+    - name: Build
+      run: mkdir build && cd build && cmake .. && cmake --build .
+    - name: Test
+      run: cd build/bin && sudo ./DatabaseAPI_UnitTest
+  macOS_arm64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download ConfigureTools
+        run: git clone https://github.com/DeepForge-Tech/ConfigureTools.git
+      - name: Install libraries
+        run: python3 ConfigureTools/InstallPackages.py
+      - name: Build
+        run: mkdir build && cd build && cmake .. && cmake --build .
+      - name: Test
+        run: cd build/bin && sudo ./DatabaseAPI_UnitTest
+  macOS_amd64:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download ConfigureTools
+        run: git clone https://github.com/DeepForge-Tech/ConfigureTools.git
+      - name: Install libraries
+        run: python3 ConfigureTools/InstallPackages.py
+      - name: Build
+        run: mkdir build && cd build && cmake .. && cmake --build .
+      - name: Test
+        run: cd build/bin && sudo ./DatabaseAPI_UnitTest
