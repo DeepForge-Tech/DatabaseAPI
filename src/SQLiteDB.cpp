@@ -1,6 +1,6 @@
 #include <DatabaseAPI/SQLiteDB.hpp>
 
-int DB::SQLiteDB::CreateTable(const std::string &NameTable, DB::DatabaseValues Columns)
+int DB::SQLiteDB::CreateTable(const std::string &NameTable, DB::HashedDatabaseValues Columns)
 {
     try
     {
@@ -26,10 +26,10 @@ int DB::SQLiteDB::CreateTable(const std::string &NameTable, DB::DatabaseValues C
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.CreateTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.CreateTable.{}", error.what()));
     }
 }
-int DB::SQLiteDB::InsertRowToTable(const std::string &NameTable, DB::DatabaseValues Fields)
+int DB::SQLiteDB::InsertRowToTable(const std::string &NameTable, DB::HashedDatabaseValues Fields)
 {
     try
     {
@@ -61,7 +61,7 @@ int DB::SQLiteDB::InsertRowToTable(const std::string &NameTable, DB::DatabaseVal
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.InsertRowToTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.InsertRowToTable.{}", error.what()));
     }
 }
 
@@ -94,7 +94,7 @@ bool DB::SQLiteDB::ExistTableInDB(const std::string &NameTable)
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.ExistTableInDB.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.ExistTableInDB.{}", error.what()));
     }
 }
 
@@ -119,17 +119,17 @@ bool DB::SQLiteDB::ExistRowInTable(const std::string &NameTable, const std::stri
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.ExistRowInTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.ExistRowInTable.{}", error.what()));
     }
 }
 
-std::string DB::SQLiteDB::GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+std::string DB::SQLiteDB::GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions)
 {
     try
     {
         std::string AnswerDB;
         std::string SQL_QUERY;
-        // DatabaseValues values;
+        // HashedDatabaseValues values;
 
         // Create SQL statement
         SQL_QUERY = fmt::format("SELECT {} FROM {}", NameColumn, NameTable);
@@ -161,11 +161,11 @@ std::string DB::SQLiteDB::GetValueFromRow(const std::string &NameTable, const st
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetValueFromRow.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetValueFromRow.{}", error.what()));
     }
 }
 
-DB::DatabaseValues DB::SQLiteDB::GetRowByID(const std::string &NameTable, const int &id)
+DB::HashedDatabaseValues DB::SQLiteDB::GetRowByID(const std::string &NameTable, const int &id)
 {
     try
     {
@@ -174,7 +174,7 @@ DB::DatabaseValues DB::SQLiteDB::GetRowByID(const std::string &NameTable, const 
         std::string Key;
         std::string Value;
         std::string SQL_QUERY;
-        DB::DatabaseValues WriteMap;
+        DB::HashedDatabaseValues WriteMap;
 
         // Create SQL statement
         SQL_QUERY = fmt::format("SELECT * FROM {} WHERE id='{}'", NameTable, std::to_string(id));
@@ -212,11 +212,11 @@ DB::DatabaseValues DB::SQLiteDB::GetRowByID(const std::string &NameTable, const 
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetRowByID.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetRowByID.{}", error.what()));
     }
 }
 
-DB::EnumDatabaseValues DB::SQLiteDB::GetRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::HashedEnumDatabaseValues DB::SQLiteDB::GetRowFromTable(const std::string &NameTable, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions)
 {
     try
     {
@@ -227,8 +227,8 @@ DB::EnumDatabaseValues DB::SQLiteDB::GetRowFromTable(const std::string &NameTabl
         std::string id;
         std::string Key;
         std::string Value;
-        DatabaseValues values;
-        EnumDatabaseValues WriteMap;
+        HashedDatabaseValues values;
+        HashedEnumDatabaseValues WriteMap;
 
         // Create SQL statement
         SQL_QUERY = fmt::format("SELECT * FROM {}", NameTable);
@@ -251,7 +251,7 @@ DB::EnumDatabaseValues DB::SQLiteDB::GetRowFromTable(const std::string &NameTabl
         while ((RESULT_SQL = sqlite3_step(statement)) == SQLITE_ROW)
         {
             id = (const char *)sqlite3_column_text(statement, 0);
-            DB::DatabaseValues row;
+            DB::HashedDatabaseValues row;
             row.insert(std::pair<std::string, std::string>("id", id));
             for (int i = 1; i < num_columns; i++)
             {
@@ -259,7 +259,7 @@ DB::EnumDatabaseValues DB::SQLiteDB::GetRowFromTable(const std::string &NameTabl
                 Value = (const char *)sqlite3_column_text(statement, i);
                 row.insert(std::pair<std::string, std::string>(Key, Value));
             }
-            WriteMap.insert(std::pair<int, DB::DatabaseValues>(n, row));
+            WriteMap.insert(std::pair<int, DB::HashedDatabaseValues>(n, row));
             n++;
         }
         /*example returned WriteMap:
@@ -277,11 +277,11 @@ DB::EnumDatabaseValues DB::SQLiteDB::GetRowFromTable(const std::string &NameTabl
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetRowFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetRowFromTable.{}", error.what()));
     }
 }
 
-DB::DatabaseValues DB::SQLiteDB::GetTwoColumnsFromTable(const std::string &NameTable, const std::string &FirstColumn, const std::string &SecondColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::HashedDatabaseValues DB::SQLiteDB::GetTwoColumnsFromTable(const std::string &NameTable, const std::string &FirstColumn, const std::string &SecondColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions)
 {
     try
     {
@@ -290,7 +290,7 @@ DB::DatabaseValues DB::SQLiteDB::GetTwoColumnsFromTable(const std::string &NameT
         std::string Key;
         std::string Value;
         std::string SQL_QUERY;
-        DB::DatabaseValues WriteMap;
+        DB::HashedDatabaseValues WriteMap;
 
         // Create SQL statement
         SQL_QUERY = fmt::format("SELECT {}, {} FROM {}", FirstColumn, SecondColumn, NameTable);
@@ -336,17 +336,17 @@ DB::DatabaseValues DB::SQLiteDB::GetTwoColumnsFromTable(const std::string &NameT
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetTwoColumnsFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetTwoColumnsFromTable.{}", error.what()));
     }
 }
 
-DB::EnumColDatabaseValues DB::SQLiteDB::GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::HashedEnumColDatabaseValues DB::SQLiteDB::GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions)
 {
     try
     {
         // int num_columns;
         int RESULT_SQL;
-        EnumColDatabaseValues WriteMap;
+        HashedEnumColDatabaseValues WriteMap;
         std::string Value;
         std::string SQL_QUERY;
 
@@ -384,11 +384,11 @@ DB::EnumColDatabaseValues DB::SQLiteDB::GetOneColumnFromTable(const std::string 
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetOneColumnFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetOneColumnFromTable.{}", error.what()));
     }
 }
 
-DB::ArrayDatabaseValues DB::SQLiteDB::GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions)
+DB::ArrayDatabaseValues DB::SQLiteDB::GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions)
 {
     try
     {
@@ -433,15 +433,15 @@ DB::ArrayDatabaseValues DB::SQLiteDB::GetArrayOneColumnFromTable(const std::stri
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetArrayOneColumnFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetArrayOneColumnFromTable.{}", error.what()));
     }
 }
 
-DB::EnumDatabaseValues DB::SQLiteDB::GetAllRowsFromTable(const std::string &NameTable)
+DB::HashedEnumDatabaseValues DB::SQLiteDB::GetAllRowsFromTable(const std::string &NameTable)
 {
     try
     {
-        EnumDatabaseValues WriteMap;
+        HashedEnumDatabaseValues WriteMap;
         int n = 0;
         int RESULT_SQL;
         int num_columns;
@@ -462,7 +462,7 @@ DB::EnumDatabaseValues DB::SQLiteDB::GetAllRowsFromTable(const std::string &Name
         while ((RESULT_SQL = sqlite3_step(statement)) == SQLITE_ROW)
         {
             id = (const char *)sqlite3_column_text(statement, 0);
-            DatabaseValues row;
+            HashedDatabaseValues row;
             for (int i = 1; i < num_columns; i++)
             {
                 Key = sqlite3_column_name(statement, i);
@@ -470,7 +470,7 @@ DB::EnumDatabaseValues DB::SQLiteDB::GetAllRowsFromTable(const std::string &Name
                 row.insert(std::pair<std::string, std::string>("id", id));
                 row.insert(std::pair<std::string, std::string>(Key, Value));
             }
-            WriteMap.insert(std::pair<int, DB::DatabaseValues>(n, row));
+            WriteMap.insert(std::pair<int, DB::HashedDatabaseValues>(n, row));
             n++;
         }
         /*example returned WriteMap:
@@ -488,11 +488,11 @@ DB::EnumDatabaseValues DB::SQLiteDB::GetAllRowsFromTable(const std::string &Name
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetAllRowsFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetAllRowsFromTable.{}", error.what()));
     }
 }
 
-DB::DatabaseValues DB::SQLiteDB::GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters)
+DB::HashedDatabaseValues DB::SQLiteDB::GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters)
 {
     try
     {
@@ -503,7 +503,7 @@ DB::DatabaseValues DB::SQLiteDB::GetMaxRowFromTable(const std::string &NameTable
         std::string Value;
         std::string SQL_QUERY;
         std::string id;
-        DB::DatabaseValues WriteMap;
+        DB::HashedDatabaseValues WriteMap;
 
         // Create SQL statement
         SQL_QUERY = fmt::format("SELECT * FROM {} WHERE {} =(SELECT max({}) FROM {}", NameTable, NameColumn, NameColumn, NameTable);
@@ -539,11 +539,11 @@ DB::DatabaseValues DB::SQLiteDB::GetMaxRowFromTable(const std::string &NameTable
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetMaxRowFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetMaxRowFromTable.{}", error.what()));
     }
 }
 
-std::string DB::SQLiteDB::GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters)
+std::string DB::SQLiteDB::GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters)
 {
     try
     {
@@ -577,7 +577,7 @@ std::string DB::SQLiteDB::GetMaxValueFromTable(const std::string &NameTable, con
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetMaxValueFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetMaxValueFromTable.{}", error.what()));
     }
 }
 
@@ -610,11 +610,11 @@ int DB::SQLiteDB::GetArraySize(const std::string &NameTable, const std::string &
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.GetArraySize.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetArraySize.{}", error.what()));
     }
 }
 
-int DB::SQLiteDB::RemoveRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters)
+int DB::SQLiteDB::RemoveRowFromTable(const std::string &NameTable, const std::optional<HashedDatabaseValues> &Parameters)
 {
     try
     {
@@ -636,7 +636,7 @@ int DB::SQLiteDB::RemoveRowFromTable(const std::string &NameTable, const std::op
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.RemoveRowFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.RemoveRowFromTable.{}", error.what()));
     }
 }
 
@@ -659,7 +659,7 @@ int DB::SQLiteDB::DeleteAllRows(const std::string &NameTable)
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.DeleteAllRows.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.DeleteAllRows.{}", error.what()));
     }
 }
 
@@ -677,18 +677,18 @@ int DB::SQLiteDB::RunQuery(const std::string &SQL_QUERY)
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.RunQuery.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.RunQuery.{}", error.what()));
     }
 }
 
-DB::EnumDatabaseValues DB::SQLiteDB::ExecuteQuery(const std::string &SQL_QUERY)
+DB::HashedEnumDatabaseValues DB::SQLiteDB::ExecuteQuery(const std::string &SQL_QUERY)
 {
     try
     {
         std::string id;
         std::string Key;
         std::string Value;
-        EnumDatabaseValues WriteMap;
+        HashedEnumDatabaseValues WriteMap;
         int n = 0;
         int RESULT_SQL;
         int num_columns;
@@ -704,7 +704,7 @@ DB::EnumDatabaseValues DB::SQLiteDB::ExecuteQuery(const std::string &SQL_QUERY)
         while ((RESULT_SQL = sqlite3_step(statement)) == SQLITE_ROW)
         {
             id = (const char *)sqlite3_column_text(statement, 0);
-            DB::DatabaseValues row;
+            DB::HashedDatabaseValues row;
             row.insert(std::pair<std::string, std::string>("id", id));
             for (int i = 1; i < num_columns; i++)
             {
@@ -712,7 +712,7 @@ DB::EnumDatabaseValues DB::SQLiteDB::ExecuteQuery(const std::string &SQL_QUERY)
                 Value = (const char *)sqlite3_column_text(statement, i);
                 row.insert(std::pair<std::string, std::string>(Key, Value));
             }
-            WriteMap.insert(std::pair<int, DB::DatabaseValues>(n, row));
+            WriteMap.insert(std::pair<int, DB::HashedDatabaseValues>(n, row));
             n++;
         }
         /*example returned WriteMap:
@@ -732,11 +732,11 @@ DB::EnumDatabaseValues DB::SQLiteDB::ExecuteQuery(const std::string &SQL_QUERY)
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.ExecuteQuery.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.ExecuteQuery.{}", error.what()));
     }
 }
 
-int DB::SQLiteDB::UpdateRowInTable(const std::string &NameTable, DB::DatabaseValues Values, DB::DatabaseValues Parameters)
+int DB::SQLiteDB::UpdateRowInTable(const std::string &NameTable, DB::HashedDatabaseValues Values, DB::HashedDatabaseValues Parameters)
 {
     try
     {
@@ -764,7 +764,7 @@ int DB::SQLiteDB::UpdateRowInTable(const std::string &NameTable, DB::DatabaseVal
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.UpdateRowInTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.UpdateRowInTable.{}", error.what()));
     }
 }
 
@@ -780,7 +780,7 @@ int DB::SQLiteDB::countSubstr(const std::string str, const std::string substr)
     return count;
 }
 
-void DB::SQLiteDB::AddParameters(std::string &SQL_QUERY, const DB::DatabaseValues &Parameters, int maxNum_WHERE)
+void DB::SQLiteDB::AddParameters(std::string &SQL_QUERY, const DB::HashedDatabaseValues &Parameters, int maxNum_WHERE)
 {
     if (Parameters.size() == 0)
     {
@@ -800,7 +800,7 @@ void DB::SQLiteDB::AddParameters(std::string &SQL_QUERY, const DB::DatabaseValue
     }
 }
 
-void DB::SQLiteDB::AddExceptions(std::string &SQL_QUERY, const DB::DatabaseValues &Exceptions, int maxNum_WHERE)
+void DB::SQLiteDB::AddExceptions(std::string &SQL_QUERY, const DB::HashedDatabaseValues &Exceptions, int maxNum_WHERE)
 {
     if (Exceptions.size() == 0)
     {

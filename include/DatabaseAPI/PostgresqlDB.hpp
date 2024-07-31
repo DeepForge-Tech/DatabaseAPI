@@ -63,6 +63,7 @@ namespace DB
         int GetArraySize(const std::string &NameTable, const std::string &NameColumn);
 
     protected:
+
         int countSubstr(const std::string str, const std::string substr);
 
         void AddParameters(std::string &SQL_QUERY, const DB::DatabaseValues &Parameters, int maxNum_WHERE);

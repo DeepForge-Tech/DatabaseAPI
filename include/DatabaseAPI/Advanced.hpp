@@ -3,7 +3,10 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+#include <cstddef>
 #include <unordered_map>
+#include <map>
+#include <vector>
 #include <filesystem>
 #include <typeinfo>
 #include <memory>
@@ -13,10 +16,14 @@
 
 namespace DB
 {
-    typedef std::unordered_map<std::string, std::string> DatabaseValues;
-    typedef std::unordered_map<int, DatabaseValues> EnumDatabaseValues;
-    typedef std::unordered_map<int, std::string> EnumColDatabaseValues; // Enumerated columns
-    typedef std::unique_ptr<std::string[]> ArrayDatabaseValues;
+    using HashedDatabaseValues = std::unordered_map<std::string, std::string> ;
+    using HashedEnumDatabaseValues = std::unordered_map<int, HashedDatabaseValues> ;
+    using HashedEnumColDatabaseValues = std::unordered_map<int, std::string> ; // Enumerated columns
+    using ArrayDatabaseValues = std::unique_ptr<std::string[]> ;
+
+    using DatabaseValues = std::map<std::string, std::string> ;
+    using EnumDatabaseValues = std::map<int, DatabaseValues> ;
+    using EnumColDatabaseValues = std::map<int, std::string> ; // Enumerated columns
 
     // Method of make string to lower
     std::string to_lower(std::string sentence);

@@ -35,3 +35,4 @@ build/
 .idea/
 .vs/
 build_linux/
+node_modules/

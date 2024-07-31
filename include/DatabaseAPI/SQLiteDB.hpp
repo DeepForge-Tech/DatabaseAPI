@@ -35,41 +35,41 @@ namespace DB
             if (isOpen)
                 sqlite3_close(db);
         }
-        int CreateTable(const std::string &NameTable, DatabaseValues Columns);
+        int CreateTable(const std::string &NameTable, HashedDatabaseValues Columns);
 
-        int InsertRowToTable(const std::string &NameTable, DatabaseValues Fields);
+        int InsertRowToTable(const std::string &NameTable, HashedDatabaseValues Fields);
 
         bool ExistTableInDB(const std::string &NameTable);
 
         bool ExistRowInTable(const std::string &NameTable, const std::string &NameColumn, const std::string &Value);
 
-        std::string GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        std::string GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions);
 
-        DatabaseValues GetRowByID(const std::string &NameTable, const int &id);
+        HashedDatabaseValues GetRowByID(const std::string &NameTable, const int &id);
 
-        DatabaseValues GetTwoColumnsFromTable(const std::string &NameTable, const std::string &FirstColumn, const std::string &SecondColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        HashedDatabaseValues GetTwoColumnsFromTable(const std::string &NameTable, const std::string &FirstColumn, const std::string &SecondColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions);
 
-        EnumColDatabaseValues GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        HashedEnumColDatabaseValues GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions);
 
-        ArrayDatabaseValues GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        ArrayDatabaseValues GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions);
 
-        EnumDatabaseValues GetRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        HashedEnumDatabaseValues GetRowFromTable(const std::string &NameTable, const std::optional<HashedDatabaseValues> &Parameters, const std::optional<HashedDatabaseValues> &Exceptions);
 
-        EnumDatabaseValues GetAllRowsFromTable(const std::string &NameTable);
+        HashedEnumDatabaseValues GetAllRowsFromTable(const std::string &NameTable);
 
-        DatabaseValues GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters);
+        HashedDatabaseValues GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters);
 
-        std::string GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters);
+        std::string GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<HashedDatabaseValues> &Parameters);
 
-        int RemoveRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters);
+        int RemoveRowFromTable(const std::string &NameTable, const std::optional<HashedDatabaseValues> &Parameters);
 
         int DeleteAllRows(const std::string &NameTable);
 
         int RunQuery(const std::string &SQL_QUERY);
 
-        EnumDatabaseValues ExecuteQuery(const std::string &SQL_QUERY);
+        HashedEnumDatabaseValues ExecuteQuery(const std::string &SQL_QUERY);
 
-        int UpdateRowInTable(const std::string &NameTable, DatabaseValues Values, DatabaseValues Parameters);
+        int UpdateRowInTable(const std::string &NameTable, HashedDatabaseValues Values, HashedDatabaseValues Parameters);
         // Method of make string to upper
         std::string to_upper(const std::string &sentence)
         {
@@ -88,9 +88,9 @@ namespace DB
     protected:
         int countSubstr(const std::string str, const std::string substr);
 
-        void AddParameters(std::string &SQL_QUERY, const DB::DatabaseValues &Parameters, int maxNum_WHERE);
+        void AddParameters(std::string &SQL_QUERY, const DB::HashedDatabaseValues &Parameters, int maxNum_WHERE);
 
-        void AddExceptions(std::string &SQL_QUERY, const DatabaseValues &Exceptions, int maxNum_WHERE);
+        void AddExceptions(std::string &SQL_QUERY, const HashedDatabaseValues &Exceptions, int maxNum_WHERE);
 
         static int callback(void *data, int argc, char **argv, char **azColName)
         {

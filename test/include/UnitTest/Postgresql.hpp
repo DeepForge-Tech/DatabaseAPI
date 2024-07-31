@@ -1,0 +1,4 @@
+#ifndef POSTGRESQL_TEST_HPP
+#define POSTGRESQL_TEST_HPP
+
+#endif

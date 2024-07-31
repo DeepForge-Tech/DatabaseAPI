@@ -20,7 +20,7 @@ jobs:
     - name: Install libraries
       run: python3 ConfigureTools/InstallPackages.py
     - name: Build
-      run: mkdir build && ls ./test/include && cd build && cmake -DUSE_SQLITE=ON -DUSE_POSTGRESQL=ON -DUSE_SERVICE_POSTGRESQL=ON -DCMAKE_BUILD_TYPE="Release" .. && cmake --build .
+      run: mkdir build && cd build && cmake -DUSE_SQLITE=ON -DUSE_POSTGRESQL=ON -DUSE_SERVICE_POSTGRESQL=ON -DCMAKE_BUILD_TYPE="Release" .. && cmake --build .
     - name: Test
       run: cd build/bin && sudo ./DatabaseAPI_UnitTest
   macOS_arm64:

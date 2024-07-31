@@ -18,7 +18,16 @@ option(USE_SERVICE_POSTGRESQL "Use CURL for send requests to service of postgres
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadDependecies.cmake)
 
-set(USE_SQLITE ON)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_CXX_FLAGS_DEBUG
+            "/DWIN32 /D_WINDOWS /EHsc /WX /wd4355 /wd4251 /wd4250 /wd4996 /FS"
+            CACHE STRING "Debug compiler flags" FORCE
+    )
+else ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -I /usr/local/include -I ../../include -DCURL_STATICLIB -Bstatic")
+endif ()
+
 set(SOURCE_FILES
     src/Advanced.cpp
 )
@@ -47,7 +56,7 @@ if (USE_SQLITE)
     )
     FetchContent_MakeAvailable(SQLite)
     list(APPEND SOURCE_FILES src/SQLiteDB.cpp)
-    set(LIBRARIES SQLite)
+    list(APPEND LIBRARIES SQLite)
 endif()
 
 # libpqxx
@@ -66,34 +75,43 @@ FetchContent_MakeAvailable(libpqxx)
 endif()
 
 if(USE_SERVICE_POSTGRESQL)
-# jsoncpp
-FetchContent_Declare(jsoncpp
-        GIT_REPOSITORY https://github.com/DeepForge-Technology/jsoncpp.git
-        GIT_TAG master
-)
-# if(NOT jsoncpp_POPULATED)
-#   FetchContent_Populate(jsoncpp)
-#   add_subdirectory(${jsoncpp_SOURCE_DIR} ${jsoncpp_BINARY_DIR})
-# endif()
-FetchContent_MakeAvailable(jsoncpp)
+  if(WIN32)
+    set(USE_WINDOWS_SSPI ON)
+    set(USE_SCHANNEL ON)
+    set(CMAKE_USE_WINSSL ON)
+  endif()
+  find_package(OpenSSL REQUIRED)
+  # jsoncpp
+  FetchContent_Declare(jsoncpp
+          GIT_REPOSITORY https://github.com/DeepForge-Technology/jsoncpp.git
+          GIT_TAG master
+  )
+  # if(NOT jsoncpp_POPULATED)
+  #   FetchContent_Populate(jsoncpp)
+  #   add_subdirectory(${jsoncpp_SOURCE_DIR} ${jsoncpp_BINARY_DIR})
+  # endif()
+  FetchContent_MakeAvailable(jsoncpp)
 
-FetchContent_Declare(libcurl
-  GIT_REPOSITORY https://github.com/DeepForge-Technology/curl.git
-  GIT_TAG master
-  GIT_SHALLOW 1
-)
-# if(NOT libcurl_POPULATED)
-#   FetchContent_Populate(libcurl)
+  FetchContent_Declare(libcurl
+    GIT_REPOSITORY https://github.com/DeepForge-Technology/curl.git
+    GIT_TAG master
+    GIT_SHALLOW 1
+  )
+  # if(NOT libcurl_POPULATED)
+  #   FetchContent_Populate(libcurl)
 
-#   add_subdirectory(${libcurl_SOURCE_DIR} ${libcurl_BINARY_DIR} EXCLUDE_FROM_ALL)
-# endif()
-FetchContent_MakeAvailable(libcurl)
+  #   add_subdirectory(${libcurl_SOURCE_DIR} ${libcurl_BINARY_DIR} EXCLUDE_FROM_ALL)
+  # endif()
+  FetchContent_MakeAvailable(libcurl)
+  list(APPEND SOURCE_FILES src/ServicePostgresqlDB.cpp)
+  list(APPEND LIBRARIES libcurl_static jsoncpp_static OpenSSL::SSL OpenSSL::Crypto)
 endif()
 
 add_library(DatabaseAPI SHARED ${SOURCE_FILES})
 
 add_library(DatabaseAPI_static STATIC ${SOURCE_FILES})
 
+list(APPEND LIBRARIES fmt)
 
 target_link_libraries(DatabaseAPI ${LIBRARIES})
 target_link_libraries(DatabaseAPI_static ${LIBRARIES})
@@ -101,4 +119,8 @@ target_link_libraries(DatabaseAPI_static ${LIBRARIES})
 # add_executable(example ${CMAKE_CURRENT_SOURCE_DIR}/example/example.cpp)
 # target_link_libraries(example DatabaseAPI)
 
+# Tests
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+# Examples
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/example)

@@ -1,51 +1,79 @@
-#ifndef SERVICEPOSTGRESQLDB_HPP
+#ifndef SERVICE_POSTGRESQLDB_HPP
 #define SERVICE_POSTGRESQLDB_HPP
 
 #include <DatabaseAPI/Advanced.hpp>
 #include <curl/curl.h>
 #include <json/json.h>
 
+#define JSON_DATA_NOT_FOUND "Object data not found into json response from server"
+
 namespace DB
 {
+    size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
+
+    // template <typename DataType>
     class ServicePostgresqlDB
     {
     public:
-        void connect()
-        int CreateTable(const std::string &NameTable, DatabaseValues Columns);
+        ServicePostgresqlDB(const char *connection_url = nullptr, 
+                            HashedDatabaseValues *connection_data = nullptr, 
+                            const char *json_query_str = nullptr, 
+                            const char *json_data_str = nullptr)
+        {
+            if (connection_data != nullptr) connectionData = std::move(*connection_data);
+            if (connection_url != nullptr) connectionUrl = std::move(connection_url);
+            if (json_query_str != nullptr) jsonQueryStr = std::move(json_query_str);
+            if (json_data_str != nullptr) jsonDataStr = std::move(json_data_str);
+        }
+        ServicePostgresqlDB& setConnectionData(std::unordered_map<std::string, std::string>& connection_data);
+        ServicePostgresqlDB& setUrl(const char* connection_url);
+        ServicePostgresqlDB& setJsonDataStr(const char *json_data_str);
 
-        int InsertRowToTable(const std::string &NameTable, DatabaseValues Fields);
+        template<typename DataType>
+        int CreateTable(const std::string &NameTable,const DataType &Columns);
+
+        template<typename DataType>
+        int InsertRowToTable(const std::string &NameTable,const DataType &Fields);
+
 
         bool ExistTableInDB(const std::string &NameTable);
 
         bool ExistRowInTable(const std::string &NameTable, const std::string &NameColumn, const std::string &Value);
 
-        std::string GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        template<typename DataType>
+        std::vector<DataType> GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DataType> &Parameters, const std::optional<DataType> &exceptions);
 
-        DatabaseValues GetRowByID(const std::string &NameTable, const int &id);
+        template<typename DataType>
+        DataType GetRowByID(const std::string &NameTable, const int &id);
 
-        DatabaseValues GetTwoColumnsFromTable(const std::string &NameTable, const std::string &FirstColumn, const std::string &SecondColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        template<typename DataType>
+        std::vector<DataType> GetColumnsFromTable(const std::string &NameTable, const std::vector<std::string> &Columns,const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions);
 
-        EnumColDatabaseValues GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        // template<typename DataType>
+        // EnumColDatabaseValues GetOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
 
-        ArrayDatabaseValues GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        // ArrayDatabaseValues GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
 
-        EnumDatabaseValues GetRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
+        // 
+        // EnumDatabaseValues GetRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
 
-        EnumDatabaseValues GetAllRowsFromTable(const std::string &NameTable);
+        // EnumDatabaseValues GetAllRowsFromTable(const std::string &NameTable);
 
-        DatabaseValues GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters);
+        // DatabaseValues GetMaxRowFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters);
 
-        std::string GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters);
+        // std::string GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters);
+        template<typename DataType>
+        int RemoveRowFromTable(const std::string &NameTable, const std::optional<DataType> &Parameters);
 
-        int RemoveRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters);
+        int DeleteTable(const std::string &NameTable);
 
-        int DeleteAllRows(const std::string &NameTable);
+        int CleanTable(const std::string &NameTable);
 
-        int RunQuery(const std::string &SQL_QUERY);
+        // int RunQuery(const std::string &SQL_QUERY);
 
-        EnumDatabaseValues ExecuteQuery(const std::string &SQL_QUERY);
+        // EnumDatabaseValues ExecuteQuery(const std::string &SQL_QUERY);
 
-        int UpdateRowInTable(const std::string &NameTable, DatabaseValues Values, DatabaseValues Parameters);
+        // int UpdateRowInTable(const std::string &NameTable, DatabaseValues Values, DatabaseValues Parameters);
         // Method of make string to upper
         std::string to_upper(const std::string &sentence)
         {
@@ -59,28 +87,26 @@ namespace DB
             }
             return new_sentence;
         }
-        int GetArraySize(const std::string &NameTable, const std::string &NameColumn);
-
+        // int GetArraySize(const std::string &NameTable, const std::string &NameColumn);
     protected:
+        template<typename DataType>
+        Json::Value handleQuery(const std::string SQL_QUERY);
+
+        template <typename DataType>
+        Json::Value sendQuery(DataType *data = nullptr);
+
         int countSubstr(const std::string str, const std::string substr);
 
-        void AddParameters(std::string &SQL_QUERY, const DB::DatabaseValues &Parameters, int maxNum_WHERE);
+        template <typename DataType>
+        void AddParameters(std::string &SQL_QUERY, const DataType &Parameters, int maxNum_WHERE);
 
-        void AddExceptions(std::string &SQL_QUERY, const DatabaseValues &Exceptions, int maxNum_WHERE);
-
-        static int callback(void *data, int argc, char **argv, char **azColName)
-        {
-            int i;
-            fprintf(stderr, "%s: ", (const char *)data);
-
-            for (i = 0; i < argc; i++)
-            {
-                printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-            }
-
-            printf("\n");
-            return 0;
-        }
+        template <typename DataType>
+        void AddExceptions(std::string &SQL_QUERY, const DataType &exceptions, int maxNum_WHERE);
+    private:
+        std::string connectionUrl;
+        std::string jsonQueryStr;
+        std::string jsonDataStr;
+        std::unordered_map<std::string, std::string> connectionData;
     };
 }
 

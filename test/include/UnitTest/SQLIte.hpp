@@ -1,4 +1,5 @@
 #include <Advanced.hpp>
+#include <DatabaseAPI/SQLiteDB.hpp>
 
 class SQLite : public ::testing::Test
 {

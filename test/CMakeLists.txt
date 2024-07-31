@@ -14,7 +14,7 @@ enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # UnitTest
-add_executable(DatabaseAPI_UnitTest src/UnitTest/SQLite.cpp)
+add_executable(DatabaseAPI_UnitTest src/UnitTest/UnitTest.cpp src/UnitTest/SQLite.cpp src/UnitTest/ServicePostgresql.cpp )
 
 target_link_libraries(
     DatabaseAPI_UnitTest
