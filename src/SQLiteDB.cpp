@@ -752,7 +752,7 @@ int DB::SQLiteDB::UpdateRowInTable(const std::string &NameTable, DB::HashedDatab
             i++;
         }
 
-        AddExceptions(SQL_QUERY, Parameters, 1);
+        AddParameters(SQL_QUERY, Parameters, 1);
         SQL_QUERY += ";";
         int RESULT_SQL = sqlite3_exec(db, SQL_QUERY.c_str(), callback, NULL, NULL);
         if (RESULT_SQL != SQLITE_OK)
@@ -768,7 +768,7 @@ int DB::SQLiteDB::UpdateRowInTable(const std::string &NameTable, DB::HashedDatab
     }
 }
 
-int DB::SQLiteDB::countSubstr(const std::string str, const std::string substr)
+inline int DB::SQLiteDB::countSubstr(const std::string str, const std::string substr)
 {
     int count = 0;
     size_t pos = 0;

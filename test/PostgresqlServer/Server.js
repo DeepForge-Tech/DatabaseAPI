@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const { pool } = require("./Database");
+const logger = require('./Logger');
 
 const app = express();
 const port = 8100;
@@ -19,7 +20,10 @@ hashing();
 const user = "TestUser";
 
 app.use(bodyParser.json());
-
+app.use((req, _res, next) => {
+	logger.info(`${req.method} ${req.url} ${req.hostname}`);
+	next();
+});
 app.post("/execute", async (req, res) => {
   //   const { username, password, sql } = req.body;
   const username = req.body.db_user;

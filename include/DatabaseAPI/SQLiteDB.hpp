@@ -71,7 +71,7 @@ namespace DB
 
         int UpdateRowInTable(const std::string &NameTable, HashedDatabaseValues Values, HashedDatabaseValues Parameters);
         // Method of make string to upper
-        std::string to_upper(const std::string &sentence)
+        inline std::string to_upper(const std::string &sentence)
         {
             std::string new_sentence = "";
             for (int i = 0; i < sentence.length(); i++)
@@ -86,7 +86,7 @@ namespace DB
         int GetArraySize(const std::string &NameTable, const std::string &NameColumn);
 
     protected:
-        int countSubstr(const std::string str, const std::string substr);
+        inline int countSubstr(const std::string str, const std::string substr);
 
         void AddParameters(std::string &SQL_QUERY, const DB::HashedDatabaseValues &Parameters, int maxNum_WHERE);
 

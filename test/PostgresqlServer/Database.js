@@ -1,6 +1,6 @@
 // Database.js
 const { Pool } = require('pg');
-
+const logger = require('./Logger');
 // Конфигурация подключения к базе данных
 const pool = new Pool({
   user: 'TestUser',
@@ -11,7 +11,7 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  console.error(err); 
+  logger.error(err); 
 });
 
 // Функция для выполнения SQL-запроса

@@ -11,8 +11,8 @@ const std::string rand_int = [](){
 class ServicePostgresql : public ::testing::Test
 {
 protected:
+    int maxInsertRows;
     std::string ProjectFolder;
-    
     std::string NameApp;
     std::string Windows_Command;
     std::string macOS_Command;
@@ -34,6 +34,7 @@ protected:
     {
         try
         {
+            maxInsertRows = 1000000;
             database_ptr = std::make_unique<DB::ServicePostgresqlDB>("http://localhost:8100/execute",&database_conn_data,"query","data");
             database = database_ptr.get();
             ProjectFolder = std::filesystem::current_path().generic_string();

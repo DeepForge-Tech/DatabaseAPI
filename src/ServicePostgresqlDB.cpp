@@ -217,7 +217,7 @@ bool DB::ServicePostgresqlDB::ExistTableInDB(const std::string &NameTable)
 }
 
 template <typename DataType>
-std::vector<DataType> DB::ServicePostgresqlDB::GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions)
+std::string DB::ServicePostgresqlDB::GetValueFromRow(const std::string &NameTable, const std::string &NameColumn, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions)
 {
     try
     {
@@ -229,7 +229,7 @@ std::vector<DataType> DB::ServicePostgresqlDB::GetValueFromRow(const std::string
         // Create SQL statement
         SQL_QUERY = fmt::format("SELECT {} FROM \"{}\"", to_lower(NameColumn), to_lower(NameTable));
 
-        Parameters.has_value() ? AddParameters<DataType>(SQL_QUERY, Parameters.value(), 1) : throw std::logic_error("Parameters is empty");
+        Parameters.has_value() ? AddParameters<DataType>(SQL_QUERY, Parameters.value(), 1) : throw std::logic_error(ERROR_EMPTY_PARAMETERS);
 
         if (Exceptions.has_value())
             AddExceptions<DataType>(SQL_QUERY, Exceptions.value(), 1);
@@ -237,16 +237,7 @@ std::vector<DataType> DB::ServicePostgresqlDB::GetValueFromRow(const std::string
         SQL_QUERY += ";";
         // Execute SQL statement
         data = handleQuery<DataType>(SQL_QUERY);
-        for (const auto &arrayValue : data)
-        {
-            DataType tempData;
-            for (const auto &key : arrayValue.getMemberNames())
-            {
-                tempData.insert(std::make_pair(key, arrayValue[key].asString()));
-            }
-            outputData.push_back(tempData);
-        }
-        return outputData;
+        return data[0][to_lower(NameColumn)].asString();
     }
     catch (std::exception &error)
     {
@@ -279,6 +270,59 @@ DataType DB::ServicePostgresqlDB::GetRowByID(const std::string &NameTable, const
     }
 }
 
+template <typename SizeType, typename DataType>
+SizeType DB::ServicePostgresqlDB::CountRowsInTable(const std::string &NameTable, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions)
+{
+    try
+    {
+        std::string SQL_QUERY;
+        Json::Value data;
+        SizeType result;
+        SQL_QUERY = fmt::format("SELECT count(*) FROM \"{}\"", to_lower(NameTable));
+
+        if (Parameters.has_value())
+            AddParameters<DataType>(SQL_QUERY, Parameters.value(), 1);
+
+        if (Exceptions.has_value())
+            AddExceptions<DataType>(SQL_QUERY, Exceptions.value(), 1);
+
+        SQL_QUERY += ";";
+        data = handleQuery<DataType>(SQL_QUERY);
+        std::stringstream ss(data[0]["count"].asString());
+        ss >> result;
+        return result;
+    }
+    catch (std::exception &error)
+    {
+        throw std::runtime_error(fmt::format("DatabaseAPI.ServicePostgresqlDB.CountRowsInTable.{}", error.what()));
+    }
+}
+
+template <typename DataType>
+int DB::ServicePostgresqlDB::RemoveRowFromTable(const std::string &NameTable, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions)
+{
+    try
+    {
+        std::string SQL_QUERY;
+
+        SQL_QUERY = fmt::format("DELETE FROM {}", NameTable);
+
+        if (Parameters.has_value())
+            AddParameters<DataType>(SQL_QUERY, Parameters.value(), 1);
+
+        if (Exceptions.has_value())
+            AddExceptions<DataType>(SQL_QUERY, Exceptions.value(), 1);
+
+        SQL_QUERY += ";";
+        handleQuery<DataType>(SQL_QUERY);
+        return 0;
+    }
+    catch (std::exception &error)
+    {
+        throw std::runtime_error(fmt::format("DatabaseAPI.ServicePostgresqlDB.RemoveRowFromTable.{}", error.what()));
+    }
+}
+
 template <typename DataType>
 std::vector<DataType> DB::ServicePostgresqlDB::GetColumnsFromTable(const std::string &NameTable, const std::vector<std::string> &Columns, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions)
 {
@@ -289,20 +333,20 @@ std::vector<DataType> DB::ServicePostgresqlDB::GetColumnsFromTable(const std::st
         std::vector<DataType> outputData;
 
         // Create SQL statement
-        SQL_QUERY = "SELECT "; //fmt::format("SELECT {}, {} FROM {}", FirstColumn, SecondColumn, NameTable);
-        for (size_t i = 1;const auto& column : Columns)
+        SQL_QUERY = "SELECT "; // fmt::format("SELECT {}, {} FROM {}", FirstColumn, SecondColumn, NameTable);
+        for (size_t i = 1; const auto &column : Columns)
         {
             SQL_QUERY += to_lower(column);
             if (i != Columns.size())
                 SQL_QUERY += ", ";
             i++;
         }
-        SQL_QUERY += fmt::format(" FROM \"{}\"",to_lower(NameTable));
+        SQL_QUERY += fmt::format(" FROM \"{}\"", to_lower(NameTable));
         if (Parameters.has_value())
-            AddParameters(SQL_QUERY, Parameters.value(), 1);
+            AddParameters<DataType>(SQL_QUERY, Parameters.value(), 1);
 
         if (Exceptions.has_value())
-            AddExceptions(SQL_QUERY, Exceptions.value(), 1);
+            AddExceptions<DataType>(SQL_QUERY, Exceptions.value(), 1);
 
         SQL_QUERY += ";";
         // Execute SQL statement
@@ -320,7 +364,100 @@ std::vector<DataType> DB::ServicePostgresqlDB::GetColumnsFromTable(const std::st
     }
     catch (std::exception &error)
     {
-        throw std::runtime_error(fmt::format("DatabaseAPI.SQLiteDB.GetTwoColumnsFromTable.{}", error.what()));
+        throw std::runtime_error(fmt::format("DatabaseAPI.ServicePostgresqlDB.GetTwoColumnsFromTable.{}", error.what()));
+    }
+}
+
+template <typename DataType>
+std::string DB::ServicePostgresqlDB::GetMaxValueFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions)
+{
+    try
+    {
+        std::string SQL_QUERY;
+        Json::Value data;
+
+        // Create SQL statement
+        SQL_QUERY = fmt::format("SELECT max({}) FROM \"{}\"", to_lower(NameColumn), to_lower(NameTable));
+
+        Parameters.has_value() ? AddParameters(SQL_QUERY, Parameters.value(), 1) : throw std::logic_error(ERROR_EMPTY_PARAMETERS);
+        if (Exceptions.has_value())
+            AddExceptions<DataType>(SQL_QUERY, Exceptions.value(), 1);
+
+        SQL_QUERY += ";";
+        // Execute SQL statement
+        data = handleQuery<DataType>(SQL_QUERY);
+        return data[0]["max"].asString();
+    }
+    catch (std::exception &error)
+    {
+        throw std::runtime_error(fmt::format("DatabaseAPI.ServicePostgresqlDB.GetMaxValueFromTable.{}", error.what()));
+    }
+}
+
+template <typename DataType>
+std::vector<DataType> DB::ServicePostgresqlDB::GetMaxRowsFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions)
+{
+    try
+    {
+        std::string SQL_QUERY;
+        Json::Value data;
+        std::vector<DataType> outputData;
+
+        // Create SQL statement
+        SQL_QUERY = fmt::format("SELECT * FROM \"{}\" WHERE {} = (SELECT max({}) FROM \"{}\"", to_lower(NameTable), to_lower(NameColumn), to_lower(NameColumn), to_lower(NameTable));
+
+        if (Parameters.has_value())
+            AddParameters(SQL_QUERY, Parameters.value(), 2);
+
+        if (Exceptions.has_value())
+            AddExceptions<DataType>(SQL_QUERY, Exceptions.value(), 2);
+        SQL_QUERY += ");";
+        data = handleQuery<DataType>(SQL_QUERY);
+        // Execute SQL statement
+        for (const auto &arrayValue : data)
+        {
+            DataType tempData;
+            for (const auto &key : arrayValue.getMemberNames())
+            {
+                tempData.insert(std::make_pair(key, arrayValue[key].asString()));
+            }
+            outputData.push_back(tempData);
+        }
+        return outputData;
+    }
+    catch (std::exception &error)
+    {
+        throw std::runtime_error(fmt::format("DatabaseAPI.ServicePostgresqlDB.GetMaxRowFromTable.{}", error.what()));
+    }
+}
+
+template <typename DataType>
+int DB::ServicePostgresqlDB::UpdateRowInTable(const std::string &NameTable, const DataType &Values, const DataType &Parameters, const std::optional<DataType> &Exceptions)
+{
+    try
+    {
+        std::string SQL_QUERY;
+        SQL_QUERY = fmt::format("UPDATE \"{}\" SET ", to_lower(NameTable));
+        for (int i = 1; const auto &element : Values)
+        {
+            SQL_QUERY += element.first + "='" + element.second + "'";
+            if (i != Values.size())
+            {
+                SQL_QUERY += ",";
+            }
+            i++;
+        }
+
+        AddParameters<DataType>(SQL_QUERY, Parameters, 1);
+        if (Exceptions.has_value())
+            AddExceptions<DataType>(SQL_QUERY, Exceptions.value(), 1);
+        SQL_QUERY += ";";
+        handleQuery<DataType>(SQL_QUERY);
+        return 0;
+    }
+    catch (std::exception &error)
+    {
+        throw std::runtime_error(fmt::format("DatabaseAPI.ServicePostgresqlDB.UpdateRowInTable.{}", error.what()));
     }
 }
 
@@ -365,14 +502,14 @@ void DB::ServicePostgresqlDB::AddParameters(std::string &SQL_QUERY, const DataTy
 {
     if (Parameters.size() == 0)
     {
-        throw std::runtime_error("Parameters is empty");
+        throw std::runtime_error(ERROR_EMPTY_PARAMETERS);
     }
 
     countSubstr(SQL_QUERY, "WHERE") < maxNum_WHERE ? SQL_QUERY += " WHERE " : SQL_QUERY += " AND ";
 
     for (size_t i = 1; const auto &element : Parameters)
     {
-        SQL_QUERY += fmt::format(" {}='{}'", element.first, element.second);
+        SQL_QUERY += fmt::format(" {}='{}'", to_lower(element.first), element.second);
         if (i != Parameters.size())
         {
             SQL_QUERY += " AND ";
@@ -386,14 +523,14 @@ void DB::ServicePostgresqlDB::AddExceptions(std::string &SQL_QUERY, const DataTy
 {
     if (Exceptions.size() == 0)
     {
-        throw std::runtime_error("Exceptions is empty");
+        throw std::runtime_error(ERROR_EMPTY_EXCEPTIONS);
     }
 
     countSubstr(SQL_QUERY, "WHERE") < maxNum_WHERE ? SQL_QUERY += " WHERE " : SQL_QUERY += " AND ";
 
     for (size_t i = 1; const auto &element : Exceptions)
     {
-        SQL_QUERY += fmt::format(" NOT {}='{}'", element.first, element.second);
+        SQL_QUERY += fmt::format(" NOT {}='{}'", to_lower(element.first), element.second);
         if (i != Exceptions.size())
         {
             SQL_QUERY += " AND ";
@@ -426,8 +563,8 @@ template int DB::ServicePostgresqlDB::CreateTable<DB::DatabaseValues>(const std:
 template int DB::ServicePostgresqlDB::InsertRowToTable<DB::HashedDatabaseValues>(const std::string &, const DB::HashedDatabaseValues &);
 template int DB::ServicePostgresqlDB::InsertRowToTable<DB::DatabaseValues>(const std::string &, const DB::DatabaseValues &);
 
-template std::vector<DB::HashedDatabaseValues> DB::ServicePostgresqlDB::GetValueFromRow<DB::HashedDatabaseValues>(const std::string &, const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
-template std::vector<DB::DatabaseValues> DB::ServicePostgresqlDB::GetValueFromRow<DB::DatabaseValues>(const std::string &, const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template std::string DB::ServicePostgresqlDB::GetValueFromRow<DB::HashedDatabaseValues>(const std::string &, const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template std::string DB::ServicePostgresqlDB::GetValueFromRow<DB::DatabaseValues>(const std::string &, const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
 
 template void DB::ServicePostgresqlDB::AddParameters<DB::HashedDatabaseValues>(std::string &, const DB::HashedDatabaseValues &, int);
 template void DB::ServicePostgresqlDB::AddParameters<DB::DatabaseValues>(std::string &, const DB::DatabaseValues &, int);
@@ -438,5 +575,43 @@ template void DB::ServicePostgresqlDB::AddExceptions<DB::DatabaseValues>(std::st
 template DB::HashedDatabaseValues DB::ServicePostgresqlDB::GetRowByID<DB::HashedDatabaseValues>(const std::string &, const int &);
 template DB::DatabaseValues DB::ServicePostgresqlDB::GetRowByID<DB::DatabaseValues>(const std::string &, const int &);
 
-template std::vector<DB::HashedDatabaseValues> DB::ServicePostgresqlDB::GetColumnsFromTable(const std::string &, const std::vector<std::string> &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
-template std::vector<DB::DatabaseValues> DB::ServicePostgresqlDB::GetColumnsFromTable(const std::string &, const std::vector<std::string> &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template std::vector<DB::HashedDatabaseValues> DB::ServicePostgresqlDB::GetColumnsFromTable<DB::HashedDatabaseValues>(const std::string &, const std::vector<std::string> &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template std::vector<DB::DatabaseValues> DB::ServicePostgresqlDB::GetColumnsFromTable<DB::DatabaseValues>(const std::string &, const std::vector<std::string> &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+
+template int DB::ServicePostgresqlDB::RemoveRowFromTable<DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template int DB::ServicePostgresqlDB::RemoveRowFromTable<DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+
+template int DB::ServicePostgresqlDB::UpdateRowInTable<DB::HashedDatabaseValues>(const std::string &, const DB::HashedDatabaseValues &, const DB::HashedDatabaseValues &, const std::optional<DB::HashedDatabaseValues> &);
+template int DB::ServicePostgresqlDB::UpdateRowInTable<DB::DatabaseValues>(const std::string &, const DB::DatabaseValues &, const DB::DatabaseValues &, const std::optional<DB::DatabaseValues> &);
+
+template std::string DB::ServicePostgresqlDB::GetMaxValueFromTable<DB::HashedDatabaseValues>(const std::string &, const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template std::string DB::ServicePostgresqlDB::GetMaxValueFromTable<DB::DatabaseValues>(const std::string &, const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+
+template std::vector<DB::HashedDatabaseValues> DB::ServicePostgresqlDB::GetMaxRowsFromTable<DB::HashedDatabaseValues>(const std::string &, const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template std::vector<DB::DatabaseValues> DB::ServicePostgresqlDB::GetMaxRowsFromTable<DB::DatabaseValues>(const std::string &, const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+
+template int8_t DB::ServicePostgresqlDB::CountRowsInTable<int8_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template int16_t DB::ServicePostgresqlDB::CountRowsInTable<int16_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template int DB::ServicePostgresqlDB::CountRowsInTable<int,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template int32_t DB::ServicePostgresqlDB::CountRowsInTable<int32_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template int64_t DB::ServicePostgresqlDB::CountRowsInTable<int64_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template unsigned int DB::ServicePostgresqlDB::CountRowsInTable<unsigned int,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template unsigned long DB::ServicePostgresqlDB::CountRowsInTable<unsigned long,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template unsigned long long DB::ServicePostgresqlDB::CountRowsInTable<unsigned long long,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template uint8_t DB::ServicePostgresqlDB::CountRowsInTable<uint8_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template uint16_t DB::ServicePostgresqlDB::CountRowsInTable<uint16_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template uint32_t DB::ServicePostgresqlDB::CountRowsInTable<uint32_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+template uint64_t DB::ServicePostgresqlDB::CountRowsInTable<uint64_t,DB::HashedDatabaseValues>(const std::string &, const std::optional<DB::HashedDatabaseValues> &, const std::optional<DB::HashedDatabaseValues> &);
+
+template int8_t DB::ServicePostgresqlDB::CountRowsInTable<int8_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template int16_t DB::ServicePostgresqlDB::CountRowsInTable<int16_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template int32_t DB::ServicePostgresqlDB::CountRowsInTable<int32_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template int64_t DB::ServicePostgresqlDB::CountRowsInTable<int64_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template int DB::ServicePostgresqlDB::CountRowsInTable<int,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template unsigned int DB::ServicePostgresqlDB::CountRowsInTable<unsigned int,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template unsigned long DB::ServicePostgresqlDB::CountRowsInTable<unsigned long,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template unsigned long long DB::ServicePostgresqlDB::CountRowsInTable<unsigned long long,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template uint8_t DB::ServicePostgresqlDB::CountRowsInTable<uint8_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template uint16_t DB::ServicePostgresqlDB::CountRowsInTable<uint16_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template uint32_t DB::ServicePostgresqlDB::CountRowsInTable<uint32_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
+template uint64_t DB::ServicePostgresqlDB::CountRowsInTable<uint64_t,DB::DatabaseValues>(const std::string &, const std::optional<DB::DatabaseValues> &, const std::optional<DB::DatabaseValues> &);
