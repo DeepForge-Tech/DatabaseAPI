@@ -34,7 +34,7 @@ protected:
     {
         try
         {
-            maxInsertRows = 1000000;
+            maxInsertRows = 1000;
             database_ptr = std::make_unique<DB::ServicePostgresqlDB>("http://localhost:8100/execute",&database_conn_data,"query","data");
             database = database_ptr.get();
             ProjectFolder = std::filesystem::current_path().generic_string();

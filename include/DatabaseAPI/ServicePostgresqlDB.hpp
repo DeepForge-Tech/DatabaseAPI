@@ -49,10 +49,11 @@ namespace DB
         std::vector<DataType> GetColumnsFromTable(const std::string &NameTable, const std::vector<std::string> &Columns,const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions);
 
         // ArrayDatabaseValues GetArrayOneColumnFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
-
-        // EnumDatabaseValues GetRowFromTable(const std::string &NameTable, const std::optional<DatabaseValues> &Parameters, const std::optional<DatabaseValues> &Exceptions);
-
-        // EnumDatabaseValues GetAllRowsFromTable(const std::string &NameTable);
+        template<typename DataType>
+        DataType GetRowFromTable(const std::string &NameTable, const std::optional<DataType> &Parameters, const std::optional<DataType> &Exceptions);
+        
+        template<typename DataType>
+        std::vector<DataType> GetRowsFromTable(const std::string &NameTable,const std::optional<DataType> &Parameters, const std::optional<DataType> &exceptions);
 
         template<typename DataType>
         std::vector<DataType> GetMaxRowsFromTable(const std::string &NameTable, const std::string &NameColumn, const std::optional<DataType> &Parameters,const std::optional<DataType> &Exceptions);
@@ -68,8 +69,8 @@ namespace DB
         int CleanTable(const std::string &NameTable);
 
         // int RunQuery(const std::string &SQL_QUERY);
-
-        // EnumDatabaseValues ExecuteQuery(const std::string &SQL_QUERY);
+        template<typename DataType>
+        std::vector<DataType> ExecuteQuery(const std::string &SQL_QUERY);
 
         template<typename SizeType,typename DataType>
         SizeType CountRowsInTable(const std::string &NameTable,const std::optional<DataType> &Parameters,const std::optional<DataType> &Exceptions);
